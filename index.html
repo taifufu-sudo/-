@@ -1,264 +1,278 @@
-import React, { useState, useEffect } from 'react';
-import { Book, User, CheckCircle2, XCircle, RotateCcw, ChevronRight, Trophy, Play, Send, PartyPopper, AlertCircle, Quote } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖經擂台賽 Final</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100">
 
-const ORIGINAL_QUESTIONS = [
-  { id: 1, q: "使徒行傳是寫給哪位人士的？", options: ["提阿非羅", "提摩太", "提多", "亞基帕"], ans: 0, verse: "使徒行傳 1:1 提阿非羅啊，我已經作了前書，論到耶穌開頭一切所行所教訓的。" },
-  { id: 2, q: "五旬節彼得講道後，約有多少人受洗歸主？", options: ["五百人", "三千人", "五千人", "一萬人"], ans: 1, verse: "使徒行傳 2:41 於是領受他話的人就受了洗。那一天，門徒約添了三千人。" },
-  { id: 3, q: "使徒們在耶路撒冷被抓，是誰建議放了他們，免得與神作對？", options: ["該亞法", "迦瑪列", "尼哥底母", "亞拿"], ans: 1, verse: "使徒行傳 5:34 但有一個法利賽人，名叫迦瑪列，是眾百姓所敬重的教法師，在公會中站起來..." },
-  { id: 4, q: "掃羅在大馬士革失明後，是誰奉主命去為他禱告醫治？", options: ["亞拿尼亞", "腓利", "彼得", "巴拿巴"], ans: 0, verse: "使徒行傳 9:10 當下，在大馬色有一個門徒，名叫亞拿尼亞。主在異象中對他說：「亞拿尼亞。」" },
-  { id: 5, q: "「巴拿巴」這個名字的意思是什麼？", options: ["信心之子", "勸慰之子", "勇氣之子", "謙卑之子"], ans: 1, verse: "使徒行傳 4:36 有一個利未人，生在居比路，名叫約瑟，使徒稱他為巴拿巴（巴拿巴翻出來就是勸慰子）。" },
-  { id: 6, q: "彼得在何處看見「大布降下」的異象？", options: ["該撒利亞", "約帕", "呂大", "耶路撒冷"], ans: 1, verse: "使徒行傳 10:11 看見天開了，有一物降下，好像一塊大布，繫著四角，縋在地上。" },
-  { id: 7, q: "希律王因為沒有歸榮耀給神，結果如何？", options: ["被人刺殺", "被蟲咬死", "慚愧而死", "瘋狂致死"], ans: 1, verse: "使徒行傳 12:23 希律不歸榮耀給神，所以主的使者立刻罰他，他被蟲所咬，氣就絕了。" },
-  { id: 8, q: "保羅和巴拿巴在宣教中，誰在別加中途離開他們回耶路撒冷？", options: ["路加", "稱呼馬可的約翰", "提摩太", "提多"], ans: 1, verse: "使徒行傳 13:13 保羅和他的同人從帕弗開船，來到旁非利亞的別加，約翰就離開他們，回耶路撒冷去。" },
-  { id: 9, q: "保羅在路司得曾醫好一個什麼樣的人？", options: ["生來瘸腿", "大痲瘋", "瞎眼", "耳聾"], ans: 0, verse: "使徒行傳 14:8 路司得城裡坐著一個兩腳無力的人，生來是瘸腿的，從來沒有走過。" },
-  { id: 10, q: "保羅曾在誰面前受審，令對方幾乎要作基督徒了？", options: ["亞基帕王", "尼祿皇帝", "巡撫腓力斯", "大祭司亞拿尼亞"], ans: 0, verse: "使徒行傳 26:28 亞基帕對保羅說：「你想少微一勸，便叫我做基督徒啊！」" },
-  { id: 11, q: "保羅在何處受洗？", options: ["耶路撒冷", "亞拉伯", "大馬色", "迦密山"], ans: 2, verse: "使徒行傳 9:18 掃羅的眼睛上，好像有鱗立刻掉下來，他就能看見。於是起來受了洗（地點在大馬色）。" },
-  { id: 12, q: "使徒行傳中，聖靈第一次降臨在外邦人身上是在誰的家中？", options: ["呂底亞", "哥尼流", "亞居拉", "腓立比禁卒"], ans: 1, verse: "使徒行傳 10:44 彼得還說這話的時候，聖靈降在一切聽道的人（哥尼流家中）身上。" },
-  { id: 13, q: "保羅最後一次在聖殿被抓，是因為被控告帶誰進了殿？", options: ["提摩太", "特羅非摩", "亞波羅", "提多"], ans: 1, verse: "使徒行傳 21:29 這話是因他們曾看見以弗所人特羅非摩同保羅在城裡，以為保羅帶他進了殿。" },
-  { id: 14, q: "是誰帶領掃羅去見耶路撒冷的使徒，並說明他的改變？", options: ["彼得", "巴拿巴", "雅各", "約翰"], ans: 1, verse: "使徒行傳 9:27 惟有巴拿巴接待他，領去見使徒，把他在路上怎麼看見主... 都述說出來。" },
-  { id: 15, q: "保羅在何處因為趕出使女身上的巫鬼而被打、被囚？", options: ["帖撒羅尼迦", "腓立比", "哥林多", "雅典"], ans: 1, verse: "使徒行傳 16:12-16 來到腓立比... 有一個使女迎著面來，她被巫鬼所附，用法術叫她主人們大得財利。" },
-  { id: 16, q: "保羅在米利大島被什麼動物咬到手卻沒中毒？", options: ["蠍子", "毒蛇", "蜈蚣", "蜘蛛"], ans: 1, verse: "使徒行傳 28:3 那時，保羅拾起一捆柴，放在火上，有一條毒蛇... 咬住他的手。" },
-  { id: 17, q: "保羅在哪裡傳道時，有人把行邪術的書拿來燒了，價值五萬塊錢？", options: ["雅典", "以弗所", "哥林多", "撒馬利亞"], ans: 1, verse: "使徒行傳 19:19 平素行邪術的，也有許多人把書拿來... 焚燒。他們算計書價，便知道共合五萬塊錢。" },
-  { id: 18, q: "使徒行傳第15章關於外邦信徒是否要守什麼？", options: ["十誡", "洗禮", "割禮", "逾越節"], ans: 2, verse: "使徒行傳 15:1 有幾個人從猶太下來，教訓弟兄們說：「你們若不按摩西的規條受割禮，不能得救。」" },
-  { id: 19, q: "誰在撒馬利亞想用銀子向使徒買賜下聖靈的權柄？", options: ["西門", "巴耶穌", "丟大", "加流"], ans: 0, verse: "使徒行傳 8:18-19 西門看見使徒按手，便有聖靈賜下，就拿錢給使徒，說：「把這權柄也給我。」" },
-  { id: 20, q: "使徒行傳的最後描述保羅到了羅馬，他傳講神國的事是什麼態度？", options: ["充滿恐懼", "垂頭喪氣", "放膽傳講, 無人禁止", "隱密進行"], ans: 2, verse: "使徒行傳 28:31 凡來見他的人，他全都接待，放膽傳講神國的道，將主耶穌基督的事教導人，並沒有人禁止。" }
-];
+    <div id="root"></div>
 
-export default function App() {
-  const [gameState, setGameState] = useState('start'); 
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0); 
-  const [tempSelectedIdx, setTempSelectedIdx] = useState(null);
-  const [isCorrect, setIsCorrect] = useState(false);
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  // 初始化或重新開始時打亂題目
-  const shuffleQuestions = () => {
-    const shuffled = [...ORIGINAL_QUESTIONS].sort(() => Math.random() - 0.5);
-    setQuestions(shuffled);
-  };
+        const ORIGINAL_QUESTIONS = [
+          { id: 1, q: "使徒行傳是寫給哪位人士的？", options: ["提阿非羅", "提摩太", "提多", "亞基帕"], ans: 0, verse: "使徒行傳 1:1 提阿非羅啊，我已經作了前書，論到耶穌開頭一切所行所教訓的。" },
+          { id: 2, q: "五旬節彼得講道後，約有多少人受洗歸主？", options: ["五百人", "三千人", "五千人", "一萬人"], ans: 1, verse: "使徒行傳 2:41 於是領受他話的人就受了洗。那一天，門徒約添了三千人。" },
+          { id: 3, q: "使徒們在耶路撒冷被抓，是誰建議放了他們，免得與神作對？", options: ["該亞法", "迦瑪列", "尼哥底母", "亞拿"], ans: 1, verse: "使徒行傳 5:34 但有一個法利賽人，名叫迦瑪列，是眾百姓所敬重的教法師，在公會中站起來..." },
+          { id: 4, q: "掃羅在大馬士革失明後，是誰奉主命去為他禱告醫治？", options: ["亞拿尼亞", "腓利", "彼得", "巴拿巴"], ans: 0, verse: "使徒行傳 9:10 當下，在大馬色有一個門徒，名叫亞拿尼亞。主在異象中對他說：「亞拿尼亞。」" },
+          { id: 5, q: "「巴拿巴」這個名字的意思是什麼？", options: ["信心之子", "勸慰之子", "勇氣之子", "謙卑之子"], ans: 1, verse: "使徒行傳 4:36 有一個利未人，生在居比路，名叫約瑟，使徒稱他為巴拿巴（巴拿巴翻出來就是勸慰子）。" },
+          { id: 6, q: "彼得在何處看見「大布降下」的異象？", options: ["該撒利亞", "約帕", "呂大", "耶路撒冷"], ans: 1, verse: "使徒行傳 10:11 看見天開了，有一物降下，好像一塊大布，繫著四角，縋在地上。" },
+          { id: 7, q: "希律王因為沒有歸榮耀給神，結果如何？", options: ["被人刺殺", "被蟲咬死", "慚愧而死", "瘋狂致死"], ans: 1, verse: "使徒行傳 12:23 希律不歸榮耀給神，所以主的使者立刻罰他，他被蟲所咬，氣就絕了。" },
+          { id: 8, q: "保羅和巴拿巴在宣教中，誰在別加中途離開他們回耶路撒冷？", options: ["路加", "稱呼馬可的約翰", "提摩太", "提多"], ans: 1, verse: "使徒行傳 13:13 保羅和他的同人從帕弗開船，來到旁非利亞的別加，約翰就離開他們，回耶路撒冷去。" },
+          { id: 9, q: "保羅在路司得曾醫好一個什麼樣的人？", options: ["生來瘸腿", "大痲瘋", "瞎眼", "耳聾"], ans: 0, verse: "使徒行傳 14:8 路司得城裡坐著一個兩腳無力的人，生來是瘸腿的，從來沒有走過。" },
+          { id: 10, q: "保羅曾在誰面前受審，令對方幾乎要作基督徒了？", options: ["亞基帕王", "尼祿皇帝", "巡撫腓力斯", "大祭司亞拿尼亞"], ans: 0, verse: "使徒行傳 26:28 亞基帕對保羅說：「你想少微一勸，便叫我做基督徒啊！」" },
+          { id: 11, q: "保羅在何處受洗？", options: ["耶路撒冷", "亞拉伯", "大馬色", "迦密山"], ans: 2, verse: "使徒行傳 9:18 掃羅的眼睛上，好像有鱗立刻掉下來，他就能看見。於是起來受了洗（地點在大馬色）。" },
+          { id: 12, q: "使徒行傳中，聖靈第一次降臨在外邦人身上是在誰的家中？", options: ["呂底亞", "哥尼流", "亞居拉", "腓立比禁卒"], ans: 1, verse: "使徒行傳 10:44 彼得還說這話的時候，聖靈降在一切聽道的人（哥尼流家中）身上。" },
+          { id: 13, q: "保羅最後一次在聖殿被抓，是因為被控告帶誰進了殿？", options: ["提摩太", "特羅非摩", "亞波羅", "提多"], ans: 1, verse: "使徒行傳 21:29 這話是因他們曾看見以弗所人特羅非摩同保羅在城裡，以為保羅帶他進了殿。" },
+          { id: 14, q: "是誰帶領掃羅去見耶路撒冷的使徒，並說明他的改變？", options: ["彼得", "巴拿巴", "雅各", "約翰"], ans: 1, verse: "使徒行傳 9:27 惟有巴拿巴接待他，領去見使徒，把他在路上怎麼看見主... 都述說出來。" },
+          { id: 15, q: "保羅在何處因為趕出使女身上的巫鬼而被打、被囚？", options: ["帖撒羅尼迦", "腓立比", "哥林多", "雅典"], ans: 1, verse: "使徒行傳 16:12-16 來到腓立比... 有一個使女迎著面來，她被巫鬼所附，用法術叫她主人們大得財利。" },
+          { id: 16, q: "保羅在米利大島被什麼動物咬到手卻沒中毒？", options: ["蠍子", "毒蛇", "蜈蚣", "蜘蛛"], ans: 1, verse: "使徒行傳 28:3 那時，保羅拾起一捆柴，放在火上，有一條毒蛇... 咬住他的手。" },
+          { id: 17, q: "保羅在哪裡傳道時，有人把行邪術的書拿來燒了，價值五萬塊錢？", options: ["雅典", "以弗所", "哥林多", "撒馬利亞"], ans: 1, verse: "使徒行傳 19:19 平素行邪術的，也有許多人把書拿來... 焚燒。他們算計書價，便知道共合五萬塊錢。" },
+          { id: 18, q: "使徒行傳第15章關於外邦信徒是否要守什麼？", options: ["十誡", "洗禮", "割禮", "逾越節"], ans: 2, verse: "使徒行傳 15:1 有幾個人從猶太下來，教訓弟兄們說：「你們若不按摩西的規條受割禮，不能得救。」" },
+          { id: 19, q: "誰在撒馬利亞想用銀子向使徒買賜下聖靈的權柄？", options: ["西門", "巴耶穌", "丟大", "加流"], ans: 0, verse: "使徒行傳 8:18-19 西門看見使徒按手，便有聖靈賜下，就拿錢給使徒，說：「把這權柄也給我。」" },
+          { id: 20, q: "使徒行傳的最後描述保羅到了羅馬，他傳講神國的事是什麼態度？", options: ["充滿恐懼", "垂頭喪氣", "放膽傳講, 無人禁止", "隱密進行"], ans: 2, verse: "使徒行傳 28:31 凡來見他的人，他全都接待，放膽傳講神國的道，將主耶穌基督的事教導人，並沒有人禁止。" }
+        ];
 
-  const startQuiz = () => {
-    shuffleQuestions();
-    setGameState('playing');
-    setCurrentIdx(0);
-    setCurrentPlayerIdx(0);
-    setTempSelectedIdx(null);
-  };
+        function App() {
+          const [gameState, setGameState] = useState('start'); 
+          const [questions, setQuestions] = useState([]);
+          const [currentIdx, setCurrentIdx] = useState(0);
+          const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0); 
+          const [tempSelectedIdx, setTempSelectedIdx] = useState(null);
+          const [isCorrect, setIsCorrect] = useState(false);
 
-  const handleSubmit = () => {
-    if (tempSelectedIdx === null) return;
-    const correct = tempSelectedIdx === questions[currentIdx].ans;
-    setIsCorrect(correct);
-    setGameState('feedback');
-  };
+          const shuffleQuestions = () => {
+            const shuffled = [...ORIGINAL_QUESTIONS].sort(() => Math.random() - 0.5);
+            setQuestions(shuffled);
+          };
 
-  const nextQuestion = () => {
-    if (currentIdx < questions.length - 1) {
-      setCurrentIdx(currentIdx + 1);
-      setCurrentPlayerIdx((currentPlayerIdx + 1) % 5);
-      setTempSelectedIdx(null);
-      setGameState('playing');
-    } else {
-      setGameState('end');
-    }
-  };
+          const startQuiz = () => {
+            shuffleQuestions();
+            setGameState('playing');
+            setCurrentIdx(0);
+            setCurrentPlayerIdx(0);
+            setTempSelectedIdx(null);
+          };
 
-  return (
-    <div className="h-screen w-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden">
-      
-      {/* 主容器：固定滿版高度，確保內容不捲動 */}
-      <div className="w-full h-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
-        
-        {/* Header - 變得更緊湊 */}
-        <div className="bg-indigo-700 py-4 px-6 text-white flex items-center justify-between shrink-0 h-[80px]">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-              <Trophy className="w-6 h-6 text-amber-300" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">聖經擂台賽 Final</h1>
-            </div>
-          </div>
-          
-          {gameState !== 'start' && gameState !== 'end' && (
-            <div className="flex items-center gap-4">
-              <div className="bg-indigo-600 px-4 py-1.5 rounded-lg border border-indigo-500 flex items-center gap-2">
-                <span className="text-xs font-bold text-indigo-200 uppercase">Q. No</span>
-                <span className="text-xl font-black">{currentIdx + 1} / 20</span>
-              </div>
-            </div>
-          )}
-        </div>
+          const handleSubmit = () => {
+            if (tempSelectedIdx === null) return;
+            const correct = tempSelectedIdx === questions[currentIdx].ans;
+            setIsCorrect(correct);
+            setGameState('feedback');
+          };
 
-        {/* 核心內容區 - 使用 flex-1 與 justify-center 自動分配垂直空間 */}
-        <div className="flex-1 p-4 md:p-8 flex flex-col w-full relative overflow-hidden">
-          
-          {/* 1. 開始畫面 */}
-          {gameState === 'start' && (
-            <div className="h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-              <div className="mb-6 bg-indigo-50 w-24 h-24 rounded-full flex items-center justify-center shadow-lg">
-                <Play className="w-12 h-12 text-indigo-600 ml-1" />
-              </div>
-              <h2 className="text-4xl md:text-5xl font-black mb-4 text-slate-900">決賽挑戰</h2>
-              <p className="text-lg text-slate-500 mb-8 leading-relaxed">
-                5 位選手輪流應戰 • 隨機題序 • 即時詳解
-              </p>
-              <button 
-                onClick={startQuiz}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold py-4 px-12 rounded-2xl transition-transform hover:scale-105 shadow-xl shadow-indigo-200"
-              >
-                開始比賽
-              </button>
-            </div>
-          )}
+          const nextQuestion = () => {
+            if (currentIdx < questions.length - 1) {
+              setCurrentIdx(currentIdx + 1);
+              setCurrentPlayerIdx((currentPlayerIdx + 1) % 5);
+              setTempSelectedIdx(null);
+              setGameState('playing');
+            } else {
+              setGameState('end');
+            }
+          };
 
-          {/* 2. 作答畫面 */}
-          {gameState === 'playing' && (
-            <div className="h-full flex flex-col w-full animate-in slide-in-from-right duration-500">
-              
-              {/* 上半部：選手提示 + 題目 (靠左對齊) */}
-              <div className="flex-1 flex flex-col justify-center mb-4">
-                <div className="flex items-center justify-start mb-4">
-                  <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full border border-indigo-100 shadow-sm">
-                    <User className="w-4 h-4 animate-pulse" />
-                    <span className="text-lg font-black">請 {currentPlayerIdx + 1} 號選手作答</span>
-                  </div>
-                </div>
+          return (
+            <div className="h-screen w-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-800 overflow-hidden">
+              <div className="w-full h-full max-w-7xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col">
                 
-                <h3 className="text-3xl md:text-4xl font-bold leading-tight text-slate-800 text-left">
-                  {questions[currentIdx].q}
-                </h3>
-              </div>
-
-              {/* 下半部：選項區域 + 按鈕 */}
-              <div className="shrink-0 mb-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  {questions[currentIdx].options.map((option, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setTempSelectedIdx(idx)}
-                      className={`relative p-5 rounded-xl border-2 text-left transition-all group flex items-start gap-3 ${
-                        tempSelectedIdx === idx 
-                          ? 'border-indigo-600 bg-indigo-50 shadow-md z-10' 
-                          : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className={`shrink-0 w-8 h-8 rounded flex items-center justify-center text-base font-black transition-colors ${
-                        tempSelectedIdx === idx ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600'
-                      }`}>
-                        {String.fromCharCode(65 + idx)}
+                {/* Header */}
+                <div className="bg-indigo-700 py-4 px-6 text-white flex items-center justify-between shrink-0 h-[80px]">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm text-2xl">
+                       🏆
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold tracking-tight">聖經擂台賽 Final</h1>
+                    </div>
+                  </div>
+                  
+                  {gameState !== 'start' && gameState !== 'end' && (
+                    <div className="flex items-center gap-4">
+                      <div className="bg-indigo-600 px-4 py-1.5 rounded-lg border border-indigo-500 flex items-center gap-2">
+                        <span className="text-xs font-bold text-indigo-200 uppercase">Q. No</span>
+                        <span className="text-xl font-black">{currentIdx + 1} / 20</span>
                       </div>
-                      <span className={`text-xl font-bold leading-snug ${tempSelectedIdx === idx ? 'text-indigo-900' : 'text-slate-700'}`}>
-                        {option}
-                      </span>
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* 送出按鈕 (置底) */}
-                <div className="flex justify-center w-full">
-                  <button
-                    disabled={tempSelectedIdx === null}
-                    onClick={handleSubmit}
-                    className={`w-full md:w-auto py-3 px-10 rounded-xl font-black text-xl flex items-center justify-center gap-3 transition-all ${
-                      tempSelectedIdx === null 
-                        ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
-                        : 'bg-amber-500 text-white shadow-lg hover:bg-amber-600 hover:scale-[1.02]'
-                    }`}
-                  >
-                    <Send className="w-5 h-5" /> 確認送出
-                  </button>
+                {/* 核心內容區 */}
+                <div className="flex-1 p-4 md:p-8 flex flex-col w-full relative overflow-hidden">
+                  
+                  {/* 1. 開始畫面 */}
+                  {gameState === 'start' && (
+                    <div className="h-full flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                      <div className="mb-6 bg-indigo-50 w-24 h-24 rounded-full flex items-center justify-center shadow-lg text-4xl">
+                         ▶️
+                      </div>
+                      <h2 className="text-4xl md:text-5xl font-black mb-4 text-slate-900">決賽挑戰</h2>
+                      <p className="text-lg text-slate-500 mb-8 leading-relaxed">
+                        5 位選手輪流應戰 • 隨機題序 • 即時詳解
+                      </p>
+                      <button 
+                        onClick={startQuiz}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-bold py-4 px-12 rounded-2xl transition-transform hover:scale-105 shadow-xl shadow-indigo-200"
+                      >
+                        開始比賽
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 2. 作答畫面 */}
+                  {gameState === 'playing' && (
+                    <div className="h-full flex flex-col w-full animate-in slide-in-from-right duration-500">
+                      
+                      <div className="flex-1 flex flex-col justify-center mb-4">
+                        <div className="flex items-center justify-start mb-4">
+                          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full border border-indigo-100 shadow-sm">
+                            <span className="text-lg animate-pulse">👤</span>
+                            <span className="text-lg font-black">請 {currentPlayerIdx + 1} 號選手作答</span>
+                          </div>
+                        </div>
+                        
+                        <h3 className="text-3xl md:text-4xl font-bold leading-tight text-slate-800 text-left">
+                          {questions[currentIdx].q}
+                        </h3>
+                      </div>
+
+                      <div className="shrink-0 mb-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          {questions[currentIdx].options.map((option, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setTempSelectedIdx(idx)}
+                              className={`relative p-5 rounded-xl border-2 text-left transition-all group flex items-start gap-3 ${
+                                tempSelectedIdx === idx 
+                                  ? 'border-indigo-600 bg-indigo-50 shadow-md z-10' 
+                                  : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className={`shrink-0 w-8 h-8 rounded flex items-center justify-center text-base font-black transition-colors ${
+                                tempSelectedIdx === idx ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                              }`}>
+                                {String.fromCharCode(65 + idx)}
+                              </div>
+                              <span className={`text-xl font-bold leading-snug ${tempSelectedIdx === idx ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                {option}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-center w-full">
+                          <button
+                            disabled={tempSelectedIdx === null}
+                            onClick={handleSubmit}
+                            className={`w-full md:w-auto py-3 px-10 rounded-xl font-black text-xl flex items-center justify-center gap-3 transition-all ${
+                              tempSelectedIdx === null 
+                                ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
+                                : 'bg-amber-500 text-white shadow-lg hover:bg-amber-600 hover:scale-[1.02]'
+                            }`}
+                          >
+                            🚀 確認送出
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. 結果回饋畫面 */}
+                  {gameState === 'feedback' && (
+                    <div className="h-full flex flex-col items-center justify-center animate-in zoom-in duration-300 w-full max-w-5xl mx-auto">
+                      
+                      <div className={`shrink-0 mb-6 px-10 py-4 rounded-full flex items-center gap-4 shadow-lg ${
+                        isCorrect ? 'bg-green-600 text-white' : 'bg-rose-600 text-white'
+                      }`}>
+                        <span className="text-3xl">{isCorrect ? "🎉" : "⚠️"}</span>
+                        <span className="text-3xl font-black tracking-tight">
+                          {isCorrect ? "恭喜答對！" : "很抱歉，答錯了"}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-8 shadow-inner flex flex-col justify-center min-h-0">
+                        
+                        <div className="flex flex-col md:flex-row gap-4 items-start mb-6 border-b border-slate-200 pb-6 shrink-0">
+                          <div className="shrink-0 bg-indigo-600 text-white w-16 h-16 rounded-xl flex items-center justify-center text-4xl font-black shadow-lg">
+                            {String.fromCharCode(65 + questions[currentIdx].ans)}
+                          </div>
+                          <div className="text-left">
+                            <span className="block text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">Correct Answer</span>
+                            <p className="text-2xl md:text-3xl font-black text-indigo-900 leading-tight">
+                              {questions[currentIdx].options[questions[currentIdx].ans]}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="relative pl-6 overflow-y-auto pr-2">
+                          <span className="absolute top-0 left-0 text-3xl opacity-20">❝</span>
+                          <p className="text-lg md:text-2xl font-medium text-slate-600 leading-relaxed font-serif text-left">
+                            {questions[currentIdx].verse}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button 
+                        onClick={nextQuestion}
+                        className="mt-6 shrink-0 bg-indigo-900 hover:bg-black text-white px-10 py-4 rounded-xl text-xl font-bold flex items-center gap-3 shadow-xl transition-transform hover:-translate-y-1"
+                      >
+                        下一題 ➡️
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 4. 結束畫面 */}
+                  {gameState === 'end' && (
+                    <div className="h-full flex flex-col items-center justify-center text-center">
+                      <div className="text-6xl mb-4 animate-bounce">🏆</div>
+                      <h2 className="text-4xl font-black mb-4 text-slate-900">比賽圓滿結束</h2>
+                      <p className="text-xl text-slate-500 mb-8">感謝所有選手的參與！</p>
+                      <div className="flex gap-4 justify-center">
+                        <button onClick={() => setGameState('start')} className="px-8 py-3 bg-slate-100 rounded-xl font-bold hover:bg-slate-200">回首頁</button>
+                        <button onClick={startQuiz} className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center gap-2">
+                          🔄 重新比賽
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* 3. 結果回饋畫面 */}
-          {gameState === 'feedback' && (
-            <div className="h-full flex flex-col items-center justify-center animate-in zoom-in duration-300 w-full max-w-5xl mx-auto">
-              
-              {/* 大標題結果 */}
-              <div className={`shrink-0 mb-6 px-10 py-4 rounded-full flex items-center gap-4 shadow-lg ${
-                isCorrect ? 'bg-green-600 text-white' : 'bg-rose-600 text-white'
-              }`}>
-                {isCorrect ? <PartyPopper className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
-                <span className="text-3xl font-black tracking-tight">
-                  {isCorrect ? "恭喜答對！" : "很抱歉，答錯了"}
-                </span>
-              </div>
-
-              {/* 正確答案與經文展示區 (使用 flex-1 自動填滿剩餘空間) */}
-              <div className="flex-1 w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 md:p-8 shadow-inner flex flex-col justify-center min-h-0">
-                
-                {/* 答案區 */}
-                <div className="flex flex-col md:flex-row gap-4 items-start mb-6 border-b border-slate-200 pb-6 shrink-0">
-                  <div className="shrink-0 bg-indigo-600 text-white w-16 h-16 rounded-xl flex items-center justify-center text-4xl font-black shadow-lg">
-                    {String.fromCharCode(65 + questions[currentIdx].ans)}
+                {/* Footer */}
+                {gameState !== 'start' && gameState !== 'end' && (
+                  <div className="bg-slate-50 border-t border-slate-200 p-3 shrink-0 h-[90px] flex items-center justify-center">
+                    <div className="flex justify-center gap-8 md:gap-16">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num} className={`flex flex-col items-center gap-1 transition-all duration-300 ${
+                          (currentPlayerIdx + 1) === num ? 'opacity-100 scale-110' : 'opacity-30 grayscale scale-95'
+                        }`}>
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg shadow-md ${
+                            (currentPlayerIdx + 1) === num ? 'bg-indigo-600 text-white rotate-3' : 'bg-slate-200 text-slate-500'
+                          }`}>
+                            {num}
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">選手 {num}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <span className="block text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">Correct Answer</span>
-                    <p className="text-2xl md:text-3xl font-black text-indigo-900 leading-tight">
-                      {questions[currentIdx].options[questions[currentIdx].ans]}
-                    </p>
-                  </div>
-                </div>
+                )}
 
-                {/* 經文區 (可捲動如果文字真的太長，但一般不會) */}
-                <div className="relative pl-6 overflow-y-auto pr-2">
-                  <Quote className="absolute top-0 left-0 w-6 h-6 text-indigo-200 -scale-x-100" />
-                  <p className="text-lg md:text-2xl font-medium text-slate-600 leading-relaxed font-serif text-left">
-                    {questions[currentIdx].verse}
-                  </p>
-                </div>
-              </div>
-
-              <button 
-                onClick={nextQuestion}
-                className="mt-6 shrink-0 bg-indigo-900 hover:bg-black text-white px-10 py-4 rounded-xl text-xl font-bold flex items-center gap-3 shadow-xl transition-transform hover:-translate-y-1"
-              >
-                下一題 <ChevronRight className="w-6 h-6" />
-              </button>
-            </div>
-          )}
-
-          {/* 4. 結束畫面 */}
-          {gameState === 'end' && (
-            <div className="h-full flex flex-col items-center justify-center text-center">
-              <Trophy className="w-20 h-20 text-amber-500 mx-auto mb-4 animate-bounce" />
-              <h2 className="text-4xl font-black mb-4 text-slate-900">比賽圓滿結束</h2>
-              <p className="text-xl text-slate-500 mb-8">感謝所有選手的參與！</p>
-              <div className="flex gap-4 justify-center">
-                <button onClick={() => setGameState('start')} className="px-8 py-3 bg-slate-100 rounded-xl font-bold hover:bg-slate-200">回首頁</button>
-                <button onClick={startQuiz} className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center gap-2">
-                  <RotateCcw className="w-5 h-5" /> 重新比賽
-                </button>
               </div>
             </div>
-          )}
-        </div>
+          );
+        }
 
-        {/* Footer - 選手輪流指示器 (固定高度，不被壓縮) */}
-        {gameState !== 'start' && gameState !== 'end' && (
-          <div className="bg-slate-50 border-t border-slate-200 p-3 shrink-0 h-[90px] flex items-center justify-center">
-            <div className="flex justify-center gap-8 md:gap-16">
-              {[1, 2, 3, 4, 5].map(num => (
-                <div key={num} className={`flex flex-col items-center gap-1 transition-all duration-300 ${
-                  (currentPlayerIdx + 1) === num ? 'opacity-100 scale-110' : 'opacity-30 grayscale scale-95'
-                }`}>
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg shadow-md ${
-                    (currentPlayerIdx + 1) === num ? 'bg-indigo-600 text-white rotate-3' : 'bg-slate-200 text-slate-500'
-                  }`}>
-                    {num}
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">選手 {num}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
